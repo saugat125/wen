@@ -1,3 +1,12 @@
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogClose,
+} from '@/components/ui/dialog';
+
 import { useInfiniteQuery, useMutation } from '@tanstack/react-query';
 import { useState, useEffect } from 'react';
 import { useInView } from 'react-intersection-observer';
@@ -144,12 +153,31 @@ export default function Items() {
                 >
                   Edit
                 </button>
-                <button
-                  className="ml-3 bg-[#242424] px-5 py-2 rounded-xl cursor-pointer"
-                  onClick={() => handleDelete(item.id)}
-                >
-                  Delete
-                </button>
+                <Dialog>
+                  <DialogTrigger className="ml-3 bg-[#242424] px-5 py-2 rounded-xl cursor-pointer">
+                    Delete
+                  </DialogTrigger>
+                  <DialogContent className="bg-gray-700 border-none ">
+                    <DialogHeader>
+                      <DialogTitle className="text-white">
+                        Are you sure you want to delete it?
+                      </DialogTitle>
+                      <div className="button mt-5 flex gap-3">
+                        <button
+                          className=" bg-[#242424] px-5 py-2 rounded-xl cursor-pointer"
+                          onClick={() => handleDelete(item.id)}
+                        >
+                          Delete
+                        </button>
+                        <DialogClose asChild>
+                          <button className=" bg-[#242424] px-5 py-2 rounded-xl cursor-pointer">
+                            Cancel
+                          </button>
+                        </DialogClose>
+                      </div>
+                    </DialogHeader>
+                  </DialogContent>
+                </Dialog>
               </div>
             </>
           )}
