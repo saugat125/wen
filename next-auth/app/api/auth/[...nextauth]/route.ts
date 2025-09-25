@@ -28,6 +28,7 @@ const handler = NextAuth({
       },
     }),
   ],
+  secret: 'aaeeqqaasdfwwsfawsd',
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
