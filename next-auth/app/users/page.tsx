@@ -1,7 +1,6 @@
 'use client';
 
-import { useState } from 'react';
-import { users as initialUsers } from '@/lib/users';
+import { useEffect, useState } from 'react';
 import { useSession, signOut } from 'next-auth/react';
 
 import { Button } from '@/components/ui/button';
@@ -16,36 +15,87 @@ import {
 import { toast } from 'sonner';
 import { redirect } from 'next/navigation';
 
+type User = {
+  name: string;
+  email: string;
+  password: string;
+  role: string;
+};
+
 const UsersPage = () => {
   const { data: session, status } = useSession();
   const role = (session?.user as any)?.role || 'guest';
 
-  const [userList, setUserList] = useState(initialUsers);
-  const [newUser, setNewUser] = useState({
+  const [userList, setUserList] = useState<User[]>([]);
+  const [newUser, setNewUser] = useState<User>({
     name: '',
     email: '',
     password: '',
     role: 'user',
   });
 
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const res = await fetch('/api/users');
+        const data = await res.json();
+        setUserList(data);
+      } catch (err) {
+        console.error(err);
+        toast.error('Failed to load users');
+      }
+    };
+    fetchUsers();
+  }, []);
+
   const handleSignout = async () => {
     await signOut({ callbackUrl: '/login' });
   };
 
-  const handleDelete = (email: string) => {
-    setUserList((prev) => prev.filter((u) => u.email !== email));
-    toast.success('User Deleted');
+  const handleDelete = async (email: string) => {
+    try {
+      const res = await fetch('/api/users', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      });
+      if (res.ok) {
+        setUserList((prev) => prev.filter((u) => u.email !== email));
+        toast.success('User Deleted');
+      } else {
+        toast.error('Failed to delete user');
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error('Error deleting user');
+    }
   };
 
-  const handleAddUser = () => {
+  const handleAddUser = async () => {
     if (!newUser.name || !newUser.email || !newUser.password) {
       toast.error('All fields are required');
       return;
     }
 
-    setUserList((prev) => [...prev, newUser]);
-    toast.success('User Added');
-    setNewUser({ name: '', email: '', password: '', role: 'user' });
+    try {
+      const res = await fetch('/api/users', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newUser),
+      });
+
+      if (res.ok) {
+        const { user } = await res.json();
+        setUserList((prev) => [...prev, user]);
+        toast.success('User Added');
+        setNewUser({ name: '', email: '', password: '', role: 'user' });
+      } else {
+        toast.error('Failed to add user');
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error('Error adding user');
+    }
   };
 
   if (status === 'loading') {

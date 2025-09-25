@@ -1,6 +1,6 @@
 import NextAuth from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
-import { users } from '@/lib/users';
+import users from '@/lib/users.json';
 
 const handler = NextAuth({
   providers: [
